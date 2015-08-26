@@ -3,14 +3,14 @@
     close all;
     clear all;
     %Step1; Create a phantom objects
-    nrows = 2048;
-    ncols = 2048;
-   
+    Nx = 2048;
+    nrows = Nx;
+    ncols = Nx;  
     
-    gpu_compute_en = 1; %Enable GPU computing
     %Step 2: compute the true formula T*(T v H)*
-    htype = 'nlcg';
-    switch (htype)
+    htype = 'lp';
+    
+     switch (htype)
         case {'gaussian'} %A gaussian filter
                     bw = 30; %Bandwidth parameter
                     h=fspecial('gaussian',[round(4*bw)+1 round(4*bw)+1],bw); %Transfer function of the low-pass filter...
@@ -38,8 +38,8 @@
         phi = pi/2;
         amplitude = ones(nrows,ncols);
         phase = zeros(nrows,ncols);
-        phase(nrows*0.35:nrows*0.65,ncols*0.35:ncols*0.65)=phi;
-        amplitude(nrows*0.25:nrows*0.75,ncols*0.25:ncols*0.75)=1;
+        phase(round(nrows*0.35:nrows*0.65),round(ncols*0.35:ncols*0.65))=phi;
+        amplitude(round(nrows*0.25:nrows*0.75),round(ncols*0.25:ncols*0.75))=1;
         T= amplitude.*exp(i*phase);
         nrows = size(T,1);
         ncols = size(T,2);
@@ -70,23 +70,30 @@
         subplot(212);plot(mamp);hold on;plot(amp,'r');hold on;title('Cross sections for amplitude');
         legend('Gamma(r)','T(r)');drawnow;
     end
-     %First, initialize tk and lk. Here, gk = t v h;
-    lambda = 10;
-    tol = 1e-5; %We don't need to find the best in each step since we will tweak 2 variables t and g at the same time
-    tv_weight = 20; %Weight for the Total Variation
-    niter=1000;
     if (gpuDeviceCount()==0)
         gpu_compute_en = 1; %if there is no gpu, compute the result on cpu instead
     end
     gpu_compute_en = 1;
     
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
-    smartinit = 1; 
+    
+    %Parameter definitions
+    params.niter = 1000; %Number of iterations needed
+    params.lambda = 10;
+    params.tv_weight = 20;
+    params.tol = 1e-5; %Tolerance for the solver to stop
+    params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
+    params.smartinit = 1;
+    %Operator definitions
+    F = FFT2(Nx); %Fourier transform operator
+    
+    smartinit = 0; 
     if (gpu_compute_en==0)
-        [gk,tk] = estimate_gt(gamma,hf,niter,lambda,tv_weight,tol,method,smartinit);
+        [gk,tk] = estimate_gt(gamma,hf,params);
     else %Compute gk and tk on gpu
         d = gpuDevice();
         reset(d); %Reset the device and clear its memmory
-        [gk,tk] = estimate_gt_gpu(gamma,hf,niter,lambda,tv_weight,tol,method,smartinit);
+        [gk,tk] = estimate_gt_gpu(gamma,hf,params);
     end
+    disp('Done with solving the inverse problem....');
     

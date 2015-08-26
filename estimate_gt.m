@@ -1,10 +1,29 @@
-function [gk,tk] = estimate_gt(gamma,hf,niter,lambda,tv_weight,tol,method,smart_init_en)
+function [gk,tk] = estimate_gt(gamma,hf,params)
     %This function compute the estimation for gk and tk given gamma
+    %Author: T. H. Nguyen
+    %Date: 08/26/2015
+    %Inputs:
+    %   gamma: gamma_t,r(r,r,0)
+    %   hf: 2D Fourier transform of the spatial correlation function
+    %   params: a struct containing all the parameters and operators used
+    %   in the solver.
+    %Outputs:
+    %   gk, tk: results of the solver
     
     obj_array=zeros(0,1);
     nrows = size(gamma,1);
     ncols = size(gamma,2);
     gk = ones(size(gamma)).*exp(i*angle(gamma)); %Initial estimation
+    
+    %Read data from struct
+    niter = params.niter;
+    lambda = params.lambda;
+    tv_weight = params.tv_weight;
+    tol = params.tol;
+    method = params.method;
+    smart_init_en = params.smart_init_en;
+    
+    
     
     if (smart_init_en==0)
       tk = ones(size(gamma));%Normal initialization
