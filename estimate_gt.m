@@ -41,6 +41,7 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     end
     
     obj = fval(gamma,hf,tk,gk,params);
+    grad_obj = gfval(gamma,hf,tk,gk,params); %Checking the value of the gradient
     %Next, solve with the iterative method
     obj_array(end+1)=obj;
     cjgamma = conj(gamma);
