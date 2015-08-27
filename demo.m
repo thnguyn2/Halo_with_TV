@@ -86,6 +86,7 @@
     params.smart_init_en = 1;
     %Operator definitions
     params.F = FFT2(Nx); %Fourier transform operator
+    params.D = Grd(Nx);
     
     smartinit = 0; 
     if (gpu_compute_en==0)

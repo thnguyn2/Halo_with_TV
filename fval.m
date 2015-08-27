@@ -1,12 +1,11 @@
-function obj  = fval(gamma,hf,tk,gk,lambda,tv_weight,nrows,ncols)
+function obj  = fval(gamma,hf,tk,gk,params)
    %Compute the objective function E=||gamma-tk.gk||^2+lambda*||g-t*h||^2 +
-   %tv_weight*tv(t)
-    evect=gamma-tk.*conj(gk);
-    obj = norm(evect(:),'fro').^2;
-    tkf = fft2(tk);
-    gkfiltf =hf.*tkf;
-    gkfilt = ifft2(gkfiltf);
-    evect = gk-gkfilt;
+    lambda = params.lambda;
+    F = params.F;
+    evect1=gamma-tk.*conj(gk);
+    obj1 = sum(abs(evect1(:)).^2);
+    evect2 = gk-F'*(hf.*(F*tk));
+    obj2 = sum(abs(evect2(:)).^2);
     %Compute the Total Variation part of the signal
-    obj = obj + lambda*norm(evect(:),'fro').^2;
+    obj = obj1 + lambda*obj2;
 end

@@ -25,6 +25,7 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     
     %Get the operator
     F = params.F;
+    D = params.D;
     
     
     if (smart_init_en==0)
@@ -36,10 +37,11 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
         ang_tkf0=(conj(hipf).*ang_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
         ang_tk0 = F'*ang_tkf0;
         tk = exp(i*real(ang_tk0));
+        grad_val = D*ang_tk0;
     end
     
+    obj = fval(gamma,hf,tk,gk,params);
     %Next, solve with the iterative method
-    obj = objective_comp(gamma,hf,tk,gk,lambda,nrows,ncols);
     obj_array(end+1)=obj;
     cjgamma = conj(gamma);
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
@@ -67,7 +69,8 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
 
                 
         end
-        obj = objective_comp(gamma,hf,tk,gk,lambda,nrows,ncols);
+        obj = fval(gamma,hf,tk,gk,params);
+  
         obj_array(end+1)=obj;
         %Draw the cross section of T in figure(2)
         figure(6);
