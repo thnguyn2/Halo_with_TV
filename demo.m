@@ -87,6 +87,8 @@
     %Operator definitions
     params.F = FFT2(Nx); %Fourier transform operator
     params.D = Grd(Nx);
+    params.H = H(Nx,hf,params.F); %Filtering operator;
+    
     
     smartinit = 0; 
     if (gpu_compute_en==0)

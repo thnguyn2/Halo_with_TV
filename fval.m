@@ -4,11 +4,12 @@ function obj  = fval(gamma,hf,tk,gk,params)
     tv_weight = params.tv_weight;
     F = params.F;
     D = params.D;
+    H = params.H;
     %Measurement error
     evect1=gamma-tk.*conj(gk);
     obj1 = sum(evect1(:).*conj(evect1(:)));
     %Mismatching error
-    evect2 = gk-F'*(hf.*(F*tk));
+    evect2 = gk-H*tk;
     obj2 = lambda*sum(evect2(:).*conj(evect2(:)));
     grad_res = D*tk;
     %Total Variation part
