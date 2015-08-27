@@ -3,7 +3,7 @@
     close all;
     clear all;
     %Step1; Create a phantom objects
-    Nx = 256;
+    Nx = 512;
     nrows = Nx;
     ncols = Nx;  
     

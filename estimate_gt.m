@@ -23,9 +23,10 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     method = params.method;
     smart_init_en = params.smart_init_en;
     
-    %Get the operator
+    %Get the operators
     F = params.F;
     D = params.D;
+    H = params.H;
     
     
     if (smart_init_en==0)
@@ -44,20 +45,17 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     grad_obj = gfval(gamma,hf,tk,gk,params); %Checking the value of the gradient
     %Next, solve with the iterative method
     obj_array(end+1)=obj;
-    cjgamma = conj(gamma);
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
     for iter=1:niter
         tic
         %First, recover g from t
-        tkf = F*tk;
-        gk = (tk.*cjgamma+lambda*(F'*(tkf.*hf)))./(conj(tk).*tk+lambda);
-        
+        gk = (tk.*conj(gamma)+lambda*(H'*tk))./(conj(tk).*tk+lambda);
         beta = norm(gk,'fro');
         betasqr = beta^2;
         %Next, recover t from g      
         switch method
             case 'relax'
-                rhs = betasqr*gamma./conj(gk)+lambda*Hhg_comp(hf,gk,F);
+                rhs = betasqr*gamma./conj(gk) +lambda*(H'*gk);
                 rhsf = F*rhs;
                 tkf = rhsf./(betasqr+lambda*abs(hf).^2);
                 tk = F'*tkf;
@@ -65,13 +63,9 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
                 rhs = gk.*gamma + lambda*Hhg_comp(hf,gk);        
                 tk = cgs(@(x)A_comp(x,hf,lambda,gk,nrows,ncols),rhs(:),tol,20,F);
                 tk = reshape(tk,[nrows ncols]);
-            case 'nlcg' %Non-linear conjugate gradient solver
-               
-
-                
+            case 'nlcg' %Non-linear conjugate gradient solver      
         end
-        obj = fval(gamma,hf,tk,gk,params);
-  
+        obj = fval(gamma,hf,tk,gk,params);  
         obj_array(end+1)=obj;
         %Draw the cross section of T in figure(2)
         figure(6);
@@ -94,28 +88,13 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
      
     figure(4);
     subplot(121);imagesc(abs(tk));colorbar;title('Amplitude of tk');
-    subplot(122);imagesc(angle(tk)-angle(tk(nrows/2,1)));colorbar;title('Phase of tk');drawnpw;
-   
-   
-
-
-
+    subplot(122);imagesc(angle(tk)-angle(tk(nrows/2,1)));colorbar;title('Phase of tk');drawnow;
 end
 
 function y=A_comp(x,hf,lambda,gk,nrows,ncols,F)
     %This function computes the results of (diag(gk.^2)+lambda*H^H*H)*x
     x = reshape(x,[nrows ncols]);
-    xf = F*x;
-    HhHf = conj(hf).*hf;
-    yf = lambda*HhHf.*xf;
-    y = F'*yf;
-    y = y + x.*conj(gk).*gk; %This one is faster than abs(gk).^2  
+    y = lambda*(H'*(H*x))+conj(gk).*gk.*x;
     y = y(:);
 end
 
-function [Hhg,Hhgf]=Hhg_comp(hf,gk,F)
-    %This function compute the product H^H*gk
-    gkf = F*gk;
-    Hhgf = conj(hf).*gkf;
-    Hhg = F'*Hhgf;
-end
