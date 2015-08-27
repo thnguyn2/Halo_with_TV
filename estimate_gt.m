@@ -23,6 +23,8 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     method = params.method;
     smart_init_en = params.smart_init_en;
     
+    %Get the operator
+    F = params.F;
     
     
     if (smart_init_en==0)
@@ -30,9 +32,9 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     else
         init_eps = 1e-8;%Smart initialization regularization factor
         hipf = 1-hf; %This is the fourier transform of delta - hf filter
-        ang_gammaf = fft2(angle(gamma));
+        ang_gammaf = F*angle(gamma);
         ang_tkf0=(conj(hipf).*ang_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
-        ang_tk0 =ifft2(ang_tkf0);
+        ang_tk0 = F'*ang_tkf0;
         tk = exp(i*real(ang_tk0));
     end
     
@@ -44,26 +46,24 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     for iter=1:niter
         tic
         %First, recover g from t
-        tkf = fft2(tk);
-        gk = (tk.*cjgamma+lambda*ifft2(tkf.*hf))./(conj(tk).*tk+lambda);
+        tkf = F*tk;
+        gk = (tk.*cjgamma+lambda*(F'*(tkf.*hf)))./(conj(tk).*tk+lambda);
+        
         beta = norm(gk,'fro');
         betasqr = beta^2;
         %Next, recover t from g      
         switch method
             case 'relax'
-                rhs = betasqr*gamma./conj(gk)+lambda*Hhg_comp(hf,gk);
-                rhsf = fft2(rhs);
+                rhs = betasqr*gamma./conj(gk)+lambda*Hhg_comp(hf,gk,F);
+                rhsf = F*rhs;
                 tkf = rhsf./(betasqr+lambda*abs(hf).^2);
-                tk = ifft2(tkf);
+                tk = F'*tkf;
             case 'cg'
                 rhs = gk.*gamma + lambda*Hhg_comp(hf,gk);        
-                tk = cgs(@(x)A_comp(x,hf,lambda,gk,nrows,ncols),rhs(:),tol,20);
+                tk = cgs(@(x)A_comp(x,hf,lambda,gk,nrows,ncols),rhs(:),tol,20,F);
                 tk = reshape(tk,[nrows ncols]);
             case 'nlcg' %Non-linear conjugate gradient solver
-                rhs = betasqr*gamma./conj(gk)+lambda*Hhg_comp(hf,gk);
-                rhsf = fft2(rhs);
-                tkf = rhsf./(betasqr+lambda*abs(hf).^2);
-                tk = ifft2(tkf);
+               
 
                 
         end
@@ -74,7 +74,7 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
         est_acs=abs(tk(round((nrows+1)/2),:));
         est_cs = angle(tk(round((nrows+1)/2),:));
   
-        subplot(121);plot(est_acs);title('Amplitude')
+        subplot(121);plot(est_acs);title('Amplitude');drawnow;
         subplot(122);plot(est_cs-est_cs(1));title('Phase');drawnow;
        
         te = toc;
@@ -98,20 +98,20 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
 
 end
 
-function y=A_comp(x,hf,lambda,gk,nrows,ncols)
+function y=A_comp(x,hf,lambda,gk,nrows,ncols,F)
     %This function computes the results of (diag(gk.^2)+lambda*H^H*H)*x
     x = reshape(x,[nrows ncols]);
-    xf = fft2(x);
+    xf = F*x;
     HhHf = conj(hf).*hf;
     yf = lambda*HhHf.*xf;
-    y = ifft2(yf);
+    y = F'*yf;
     y = y + x.*conj(gk).*gk; %This one is faster than abs(gk).^2  
     y = y(:);
 end
 
-function [Hhg,Hhgf]=Hhg_comp(hf,gk)
+function [Hhg,Hhgf]=Hhg_comp(hf,gk,F)
     %This function compute the product H^H*gk
-    gkf = fft2(gk);
+    gkf = F*gk;
     Hhgf = conj(hf).*gkf;
-    Hhg = ifft2(Hhgf);      
+    Hhg = F'*Hhgf;
 end

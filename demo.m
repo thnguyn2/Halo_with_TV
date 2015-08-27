@@ -3,7 +3,7 @@
     close all;
     clear all;
     %Step1; Create a phantom objects
-    Nx = 2048;
+    Nx = 256;
     nrows = Nx;
     ncols = Nx;  
     
@@ -73,7 +73,7 @@
     if (gpuDeviceCount()==0)
         gpu_compute_en = 1; %if there is no gpu, compute the result on cpu instead
     end
-    gpu_compute_en = 1;
+    gpu_compute_en = 0;
     
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
@@ -83,9 +83,9 @@
     params.tv_weight = 20;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
-    params.smartinit = 1;
+    params.smart_init_en = 1;
     %Operator definitions
-    F = FFT2(Nx); %Fourier transform operator
+    params.F = FFT2(Nx); %Fourier transform operator
     
     smartinit = 0; 
     if (gpu_compute_en==0)
