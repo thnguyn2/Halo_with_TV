@@ -1,4 +1,4 @@
-function obj  = fval(gamma,hf,tk,gk,params)
+function obj  = fval(gamma,tk,gk,params)
    %Compute the objective function E=||gamma-tk.gk||^2+lambda*||g-t*h||^2 +
     lambda = params.lambda;
     tv_weight = params.tv_weight;
@@ -15,5 +15,6 @@ function obj  = fval(gamma,hf,tk,gk,params)
     %Total Variation part
     tv = (abs(grad_res(:,:,1)).^2+abs(grad_res(:,:,2)).^2+1e-15).^0.5;
     obj3 = tv_weight*sum(tv(:));
-    obj = obj1 + obj2 + obj3;
+    %obj = obj1 + obj2 + obj3;
+    obj = obj3;
     

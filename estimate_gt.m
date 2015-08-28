@@ -39,7 +39,7 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
         tk = exp(i*real(ang_tk0));
     end
     
-    obj = fval(gamma,hf,tk,gk,params);
+    obj = fval(gamma,tk,gk,params);
     %Next, solve with the iterative method
     obj_array(end+1)=obj;
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
@@ -47,12 +47,14 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     for iter=1:niter
         tic
         %First, recover g from t
-        gk = (tk.*conj(gamma)+lambda*(H'*tk))./(conj(tk).*tk+lambda);
-        beta = norm(gk,'fro');
-        betasqr = beta^2;
+        gk= (tk.*conj(gamma)+lambda*(H'*tk))./(conj(tk).*tk+lambda); 
+        curobj_val = fval(gamma,tk,gk,params);            
+        disp(['*** Error after finding gk: ', num2str(curobj_val) ,'****']);
         %Next, recover t from g      
         switch method
             case 'relax'
+                beta = norm(gk,'fro');
+                betasqr = beta^2;
                 rhs = betasqr*gamma./conj(gk) +lambda*(H'*gk);
                 rhsf = F*rhs;
                 tkf = rhsf./(betasqr+lambda*abs(hf).^2);
@@ -63,16 +65,19 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
                 tk = reshape(tk,[nrows ncols]);
             case 'nlcg' %Non-linear conjugate gradient solver  
                 curtk = tk;
+                curobj_val = fval(gamma,curtk,gk,params);
+                disp(['t iter init, error value: ', num2str(curobj_val)]);
+
                 for titer = 1:100
                     grad_obj = gfval(gamma,curtk,gk,params);
-                    nexttk = curtk - 1e-2*grad_obj;
+                    nexttk = curtk - 1e-7*grad_obj;
                     curtk = nexttk;
-                    curobj_val = fval(gamma,hf,curtk,gk,params);
+                    curobj_val = fval(gamma,nexttk,gk,params);
                     disp(['t iter: ' num2str(titer) ', value: ', num2str(curobj_val)]);
                 end
                 tk = nexttk;
         end
-        obj = fval(gamma,hf,tk,gk,params);  
+        obj = fval(gamma,tk,gk,params);  
         obj_array(end+1)=obj;
         %Draw the cross section of T in figure(2)
         figure(6);
