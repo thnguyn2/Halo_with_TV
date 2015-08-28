@@ -8,7 +8,7 @@
     ncols = Nx;  
     
     %Step 2: compute the true formula T*(T v H)*
-    htype = 'lp';
+    htype = 'gaussian';
     
      switch (htype)
         case {'gaussian'} %A gaussian filter
@@ -80,14 +80,13 @@
     %Parameter definitions
     params.niter = 1000; %Number of iterations needed
     params.lambda = 10;
-    params.tv_weight = 20;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;
     %Operator definitions
     params.F = FFT2(Nx); %Fourier transform operator
     params.D = Grd(Nx);
-    params.H = H(Nx,hf,params.F); %Filtering operator;
+    params.H = H(Nx,1-hf,params.F); %Filtering operator (1-hf) is the highpass filtering kernel
     
     
     smartinit = 0; 

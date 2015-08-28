@@ -1,11 +1,11 @@
-function [grad_res,mismatch_grad,consist_grad,tv_grad] = gfval(gamma,tk,gk,params)
+function [grad_res,mismatch_grad,consist_grad,tv_grad] = gfval(a_gamma,a_tk,params)
 %Compute df/dt at tk in order to solve for tk given the current estimation
 %of gk and the current solution tk
-%The objective function is f = ||gamma(r)-tk*conj(gk)||^2 + lambda*||gk - h
-%* tk||^2 +tv_Weight*sum_over_r{[(Dx(tk)(r)^2 + Dy(tk)^2 +1e-15)]^0.5}
+%The objective function is f = ||arg(gamma)-Hi.arg(tk)||^2 + lambda*sum_over_r{[(Dx(arg(tk))^2 + Dy(arg(tk))^2 +1e-15)]^0.5}
+%   a_gamma = arg(gamma)
+%   a_tk = arg(tk)
 %Author: Tan H. Nguyen
     lambda = params.lambda;
-    tv_weight = params.tv_weight;
     D = params.D;
     H = params.H; %Filtering operator
     %Compute the derivative of the 1st term
