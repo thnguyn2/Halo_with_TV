@@ -8,7 +8,7 @@
     ncols = Nx;  
     
     %Step 2: compute the true formula T*(T v H)*
-    htype = 'gaussian';
+    htype = 'lp';
     
      switch (htype)
         case {'gaussian'} %A gaussian filter
@@ -78,8 +78,8 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter = 1000; %Number of iterations needed
-    params.lambda = 10;
+    params.niter = 3000; %Number of iterations needed
+    params.lambda = 5;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;

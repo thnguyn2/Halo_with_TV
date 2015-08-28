@@ -41,18 +41,17 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     obj = fval(gamma,a_tk,params); %Compute the current objective
   
     %Next, solve with the non-linear conjugate gradient
-    obj_array(end+1)=obj;
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
-    for iter=1:niter
-         tic
-         grad_obj = gfval(gamma,curtk,gk,params);
-%                     nexttk = curtk - 1e-7*grad_obj;
-%                     curtk = nexttk;
-%                     curobj_val = fval(gamma,nexttk,gk,params);
-%                     disp(['t iter: ' num2str(titer) ', value: ', num2str(curobj_val)]);
-                 end
-                 tk = nexttk;
-   end
+    cur_a_tk = a_tk;
+    for iter=1:niter     
+          gradf = gfval(a_gamma,cur_a_tk,params);
+          next_a_tk = cur_a_tk - 1e-5*gradf;
+          obj = fval(a_gamma,next_a_tk,params);
+          disp(['Current objective: ' num2str(obj)]);
+          cur_a_tk = next_a_tk;
+          figure(3);
+          plot(cur_a_tk(end/2,:));drawnow;
+    end
 %         obj = fval(gamma,tk,gk,params);  
 %         obj_array(end+1)=obj;
 %         %Draw the cross section of T in figure(2)

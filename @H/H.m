@@ -4,7 +4,7 @@ function op = H(N,hf,F)
 %  N: dimension
 %Outputs:
     op.N = N;
-    op.hif = hif;%High-pass filter used in the operation
+    op.hif = hf;%High-pass filter used in the operation
     op.adjoint = 0;
     op.F = F; %Fourier transform operator
     op = class(op,'H');
