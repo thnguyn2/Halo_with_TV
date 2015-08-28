@@ -16,3 +16,4 @@ function obj  = fval(gamma,hf,tk,gk,params)
     tv = (abs(grad_res(:,:,1)).^2+abs(grad_res(:,:,2)).^2+1e-15).^0.5;
     obj3 = tv_weight*sum(tv(:));
     obj = obj1 + obj2 + obj3;
+    

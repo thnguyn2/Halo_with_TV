@@ -18,7 +18,6 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
     %Read data from struct
     niter = params.niter;
     lambda = params.lambda;
-    tv_weight = params.tv_weight;
     tol = params.tol;
     method = params.method;
     smart_init_en = params.smart_init_en;
@@ -38,14 +37,13 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
         ang_tkf0=(conj(hipf).*ang_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
         ang_tk0 = F'*ang_tkf0;
         tk = exp(i*real(ang_tk0));
-        grad_val = D*ang_tk0;
     end
     
     obj = fval(gamma,hf,tk,gk,params);
-    grad_obj = gfval(gamma,hf,tk,gk,params); %Checking the value of the gradient
     %Next, solve with the iterative method
     obj_array(end+1)=obj;
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
+    method = 'nlcg';
     for iter=1:niter
         tic
         %First, recover g from t
@@ -63,7 +61,16 @@ function [gk,tk] = estimate_gt(gamma,hf,params)
                 rhs = gk.*gamma + lambda*Hhg_comp(hf,gk);        
                 tk = cgs(@(x)A_comp(x,hf,lambda,gk,nrows,ncols),rhs(:),tol,20,F);
                 tk = reshape(tk,[nrows ncols]);
-            case 'nlcg' %Non-linear conjugate gradient solver      
+            case 'nlcg' %Non-linear conjugate gradient solver  
+                curtk = tk;
+                for titer = 1:100
+                    grad_obj = gfval(gamma,curtk,gk,params);
+                    nexttk = curtk - 1e-2*grad_obj;
+                    curtk = nexttk;
+                    curobj_val = fval(gamma,hf,curtk,gk,params);
+                    disp(['t iter: ' num2str(titer) ', value: ', num2str(curobj_val)]);
+                end
+                tk = nexttk;
         end
         obj = fval(gamma,hf,tk,gk,params);  
         obj_array(end+1)=obj;
