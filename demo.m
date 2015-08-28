@@ -36,39 +36,29 @@
     datasource = 1;
     if (datasource==1) %Generate simulation data
         phi = pi/2;
-        amplitude = ones(nrows,ncols);
         phase = zeros(nrows,ncols);
         phase(round(nrows*0.35:nrows*0.65),round(ncols*0.35:ncols*0.65))=phi;
-        amplitude(round(nrows*0.25:nrows*0.75),round(ncols*0.25:ncols*0.75))=1;
-        T= amplitude.*exp(i*phase);
-        nrows = size(T,1);
-        ncols = size(T,2);
+        phif = fft2(phase);
+        nrows = size(phase,1);
+        ncols = size(phase,2);
         x_arr = 1:ncols;
         y_arr = 1:nrows;
         [xx,yy]=meshgrid(x_arr,y_arr);
-        slope = 0.000;
+        slope = 0;
         phi_lin =exp(i*xx*slope);
-        T = T.*phi_lin;
-        Tf = fft2(T);
-        loTf = Tf.*hf;
-        loT = ifft2(loTf); 
-        gamma=T.*conj(loT); %Generate simulation data for Gamma
+        a_gammaf = phif.*(1-hf);
+        a_gamma = ifft2(a_gammaf);
+        a_gamma = a_gamma + 0.1*randn(size(a_gamma));
         figure(1);colormap jet;
-        subplot(221);imagesc(angle(T));axis off;colorbar;title('arg(T)');
-        subplot(222);imagesc(angle(gamma));axis off;colorbar;title('arg(gamma)');
-        subplot(223);imagesc(abs(T));axis off;colorbar;title('abs(T)');
-        subplot(224);imagesc(abs(gamma));axis off;colorbar;title('abs(gamma)');drawnow;
+        subplot(211);imagesc(phase);axis off;colorbar;title('arg(T)');
+        subplot(212);imagesc(a_gamma);axis off;colorbar;title('arg(gamma)');drawnow;
         %Display the cross-section of the image
-        mcs=angle(gamma(round((nrows+1)/2),:));%Get cross-section of the measurement
-        cs = angle(T(round((nrows+1)/2),:));
-        amp = abs(T(round((nrows+1)/2),:));%Amplitude of the T
-        mamp = abs(gamma(round((nrows+1)/2),:));%Amplitude of the T
+        mcs=a_gamma(round((nrows+1)/2),:);%Get cross-section of the measurement
+        cs = phase(round((nrows+1)/2),:);       
    
         figure(2);
-        subplot(211);plot(mcs);hold on;plot(cs,'r');hold on;title('Cross sections for phase');
-        legend('Gamma(r)','T(r)');drawnow;
-        subplot(212);plot(mamp);hold on;plot(amp,'r');hold on;title('Cross sections for amplitude');
-        legend('Gamma(r)','T(r)');drawnow;
+        plot(mcs);hold on;plot(cs,'r');hold on;title('Cross sections for phase');
+        legend('Gamma(r)','T(r)');drawnow;       
     end
     if (gpuDeviceCount()==0)
         gpu_compute_en = 1; %if there is no gpu, compute the result on cpu instead
@@ -78,8 +68,8 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter = 3000; %Number of iterations needed
-    params.lambda = 5;
+    params.niter = 30000; %Number of iterations needed
+    params.lambda = 0.5;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;
@@ -91,11 +81,11 @@
     
     smartinit = 0; 
     if (gpu_compute_en==0)
-        [gk,tk] = estimate_gt(gamma,hf,params);
+        [gk,tk] = estimate_gt(a_gamma,hf,params);
     else %Compute gk and tk on gpu
-        d = gpuDevice();
-        reset(d); %Reset the device and clear its memmory
-        [gk,tk] = estimate_gt_gpu(gamma,hf,params);
+       % d = gpuDevice();
+       % reset(d); %Reset the device and clear its memmory
+       % [gk,tk] = estimate_gt_gpu(gamma,hf,params);
     end
     disp('Done with solving the inverse problem....');
     
