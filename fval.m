@@ -1,4 +1,4 @@
-function obj  = fval(a_gamma,a_tk,params)
+function [obj,obj1,obj2]  = fval(a_gamma,a_tk,params)
    %Compute the objective function E=||arg(gamma)-(delta-h)*arg(a_tk)||^2+lambda*TV(a_tk)+
     lambda = params.lambda;
     D = params.D;

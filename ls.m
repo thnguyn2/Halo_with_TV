@@ -25,13 +25,22 @@ function [step,iter]=ls(y,u,pk,params,method)
     iter=0;
     switch method
         case {'back'} %Back tracking line-search
-            phi_ak=fval(y,u+step*pk,params);
-            while (phi_ak>phi0+c*step*(gphi0(:))'*pk(:))
-                step=step*params.LSrho;
-                %Reupdate the function value at new position
-                phi_ak=fval(y,u+step*pk,params);
-                iter=iter+1;
-            end
+          
+%             while (f1 > f0 - alpha*t*abs(g0(:)'*dx(:)))^2 & (lsiter<maxlsiter)
+%                 lsiter = lsiter + 1;
+%                 t = t * beta;
+%                 [f1, ERRobj, RMSerr]  =  objective(FTXFMtx, FTXFMtdx, DXFMtx, DXFMtdx,x,dx, t, params);
+%             end
+
+             phi_ak=fval(y,u+step*pk,params);
+             curthresh = phi0+c*step*(gphi0(:))'*pk(:);
+             while (phi_ak>curthresh)
+                 step=step*params.LSrho;
+                 %Reupdate the function value at new position
+                 phi_ak=fval(y,u+step*pk,params);
+                 iter=iter+1;
+                 curthresh = phi0+c*step*(gphi0(:))'*pk(:);
+             end
         case {'interp'} %Interpolation based line-search (see section 3.5 of [1])
             step0=step;
             dphi0=(gphi0(:))'*pk(:);%phi'(0)

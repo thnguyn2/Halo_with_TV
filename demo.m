@@ -8,7 +8,7 @@
     ncols = Nx;  
     
     %Step 2: compute the true formula T*(T v H)*
-    htype = 'lp';
+    htype = 'gaussian';
     
      switch (htype)
         case {'gaussian'} %A gaussian filter
@@ -22,7 +22,7 @@
                     hf = fft2(h1);
  
         case {'lp'} %Bandpass filter
-                    lp_bw = 50;%Bandwidth of the low pass filter in the frequency domain. The smaller it is, the more coherent the field will be 
+                    lp_bw = 10;%Bandwidth of the low pass filter in the frequency domain. The smaller it is, the more coherent the field will be 
                     hf = zeros(nrows,ncols);
                     [x,y]=meshgrid(linspace(-ncols/2,ncols/2-1,ncols),linspace(-nrows/2,nrows/2-1,nrows));
                     mask = sqrt(x.^2+y.^2)<lp_bw; %
@@ -48,7 +48,7 @@
         phi_lin =exp(i*xx*slope);
         a_gammaf = phif.*(1-hf);
         a_gamma = ifft2(a_gammaf);
-        a_gamma = a_gamma + 0.1*randn(size(a_gamma));
+        a_gamma = a_gamma + 0.01*randn(size(a_gamma));
         figure(1);colormap jet;
         subplot(211);imagesc(phase);axis off;colorbar;title('arg(T)');
         subplot(212);imagesc(a_gamma);axis off;colorbar;title('arg(gamma)');drawnow;
@@ -69,7 +69,7 @@
     
     %Parameter definitions
     params.niter = 30000; %Number of iterations needed
-    params.lambda = 0.5;
+    params.lambda = 0.0;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;

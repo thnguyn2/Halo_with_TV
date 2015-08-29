@@ -36,23 +36,19 @@ function [gk,tk] = estimate_gt(a_gamma,hf,params)
         a_tkf0=(conj(hipf).*a_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
         a_tk = F'*a_tkf0;       
     end
+    a_tk = zeros(size(a_gamma));
     obj = fval(a_gamma,a_tk,params); %Compute the current objective
   
     %Next, solve with the non-linear conjugate gradient
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
     cur_a_tk = a_tk;
-    for iter=1:niter     
-          gradf = gfval(a_gamma,cur_a_tk,params);
-          
-          next_a_tk = cur_a_tk - 1e-3*gradf;
-          obj = fval(a_gamma,next_a_tk,params);
-          disp(['Current objective: ' num2str(obj)]);
-          cur_a_tk = next_a_tk;
-          figure(3);
-          plot(cur_a_tk(end/2,:));drawnow;
-    end     
+    next_a_tk = nlcg(a_gamma,params,cur_a_tk);          
+    obj = fval(a_gamma,next_a_tk,params);
+    disp(['Current objective: ' num2str(obj)]);
+    cur_a_tk = next_a_tk;
+    figure(3);
+    plot(cur_a_tk(end/2,:));drawnow;
     figure(4);
-    subplot(121);imagesc(abs(tk));colorbar;title('Amplitude of tk');
-    subplot(122);imagesc(angle(tk)-angle(tk(nrows/2,1)));colorbar;title('Phase of tk');drawnow;
+    subplot(121);imagesc(cur_a_tk);colorbar;title('Reconstructed phase');    
 end
 
