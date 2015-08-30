@@ -31,14 +31,14 @@ lambda = params.lambda;
 [nr,nc]=size(x0);
 
 %Parameters for Line-Search algorithm
-params.LSc=1e-4;%The constant c using in Line Search algorithm
+params.LSc=0.01;%The constant c using in Line Search algorithm
                         %Note that the normalizing coefficients is needed
                         %here!!!
-params.LSrho=0.6;%Rho used in Line Search algorithm
+params.LSrho=0.8;%Rho used in Line Search algorithm
 params.LSMaxiter=100; %Max number of iteration for line-search
 params.step0=1;
 params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating 
-params.CgMaxiter = 20;
+params.CgMaxiter = 10000;
 %Configure Smoothing parameter for |x|_p
 params.LpSmooth=1e-8;
 params.pNorm=1;

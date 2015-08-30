@@ -8,7 +8,7 @@
     ncols = Nx;  
     
     %Step 2: compute the true formula T*(T v H)*
-    htype = 'gaussian';
+    htype = 'lp';
     
      switch (htype)
         case {'gaussian'} %A gaussian filter
@@ -22,7 +22,7 @@
                     hf = fft2(h1);
  
         case {'lp'} %Bandpass filter
-                    lp_bw = 10;%Bandwidth of the low pass filter in the frequency domain. The smaller it is, the more coherent the field will be 
+                    lp_bw = 5;%Bandwidth of the low pass filter in the frequency domain. The smaller it is, the more coherent the field will be 
                     hf = zeros(nrows,ncols);
                     [x,y]=meshgrid(linspace(-ncols/2,ncols/2-1,ncols),linspace(-nrows/2,nrows/2-1,nrows));
                     mask = sqrt(x.^2+y.^2)<lp_bw; %
@@ -69,7 +69,7 @@
     
     %Parameter definitions
     params.niter = 30000; %Number of iterations needed
-    params.lambda = 0.0;
+    params.lambda = 5;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;

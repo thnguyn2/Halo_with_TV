@@ -36,7 +36,6 @@ function [gk,tk] = estimate_gt(a_gamma,hf,params)
         a_tkf0=(conj(hipf).*a_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
         a_tk = F'*a_tkf0;       
     end
-    a_tk = zeros(size(a_gamma));
     obj = fval(a_gamma,a_tk,params); %Compute the current objective
   
     %Next, solve with the non-linear conjugate gradient
