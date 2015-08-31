@@ -33,10 +33,7 @@ params.LSrho=0.6;%Rho used in Line Search algorithm
 params.LSMaxiter=100; %Max number of iteration for line-search
 params.step0=1;
 params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating 
-params.CgMaxiter = 10000;
-%Configure Smoothing parameter for |x|_p
-params.LpSmooth=1e-8;
-params.pNorm=1;
+params.CgMaxiter = 2000;
 
 
 % figure(7);
@@ -59,72 +56,71 @@ k=0;
 obj_arr=zeros(0);
 while ((k<params.CgMaxiter)&&(norm(gfk,'fro')>params.CgTol))
        %---Line search for minimization---
-        [step,lsiter]=ls(y,xk,pk,params,'back');
+         %[step,lsiter]=ls(y,xk,pk,params,'back');
+         
+         
+        step = params.step0; 
+        [f0,dc,tv] = fval(y, xk, params);
+        
+        obj_arr(end+1)=f0;
+        %figure(3);
+        %plot(obj_arr);drawnow;
+        %title('Objective function');
+                 
+        k=k+1;
+        disp(['#' num2str(k) ', step: ' num2str(step) ...
+                ', Obj: ' num2str(f0,'%0.5f') ', dc:' num2str(dc,'%0.5f')...
+                ', TV:' num2str(tv,'%0.5f')]);
 
-        if (lsiter==0)
+        
+        
+        f1 = fval(y, xk+step*pk, params);
+        lsiter = 0;
+        while (f1 > f0 - params.LSc*step*abs(gfk(:)'*pk(:))) & (lsiter<params.LSMaxiter)%alpha = 0.01, t0 =1
+        	lsiter = lsiter + 1;
+            step = step * params.LSrho;
+            f1 = fval(y, xk+step*pk, params);
+        end
+         
+         if (lsiter==0)
             params.step0=params.step0/params.LSrho; %If previous step can be found very quickly then increase step size
-        end
-        if (lsiter>=2)
+         else
             params.step0=params.step0*params.LSrho; %reduce intial searching step with knowledge given in previous step
-        end
-          
+         end
+         params.step0
          %State update
-         xk1=xk+step*pk;
+         xk=xk+step*pk;
 
          %Calculate new gradient
-         gfk1=gfval(y,xk1,params);
-         
-
+         gfk1=gfval(y,xk,params);
 
          %Updating coefficients
-         %beta=(gfk1(:)'*gfk1(:))/(gfk(:)'*gfk(:)+eps);
+         beta=(gfk1(:)'*gfk1(:))/(gfk(:)'*gfk(:)+eps);
+         gfk = gfk1;
+         pk=-gfk1+beta*pk;
          
-          %Updating coefficients
-         beta=(gfk1(:)'*(gfk1(:)-gfk(:)))/(gfk(:)'*gfk(:)+eps); %This is similar to perform 
-                                                %restarting once a poor
-                                                %direction is met
-         beta=max(beta,0);
-         
-         
-         pk1=-gfk1+beta*pk;
-
-         %Compute the condition for restarting
-         grdangle=abs(gfk1(:)'*gfk(:))/sqrt(gfk1(:)'*gfk1(:))/...
-             sqrt(gfk(:)'*gfk(:));
-
-         [fk1,dc,tv]=fval(y,xk1,params);%New objective
+    
+         if (mod(k,1000)==0)
+             pk = -gfk1; %Restart
+         end
+          
+           figure(2);
+            hold off;
+            %plot(x0(end/2,:),'b');
+            hold on;
+            %plot(xk(end/2,:),'r');
+            imagesc(xk);colormap;colorbar
+            hold off;
+            %legend('Original','Reconstructed');
+            %colormap jet;
+            drawnow;
         
-         %Update all necessary info for next iteration
-         pk=pk1;
-         gfk=gfk1;
-         xk=xk1;     
-            
          
-         obj_arr(end+1)=fk1;
-         figure(3);
-         plot(obj_arr);
-         title('Objective function');
-                 
-         k=k+1;
-         disp(['#' num2str(k) ', step: ' num2str(step) ...
-                ', Obj: ' num2str(fk1,'%0.5f') ', dc:' num2str(dc,'%0.5f')...
-                ', TV:' num2str(tv,'%0.5f')...
-                ', Grad avg: ' num2str(sqrt(gfk(:)'*gfk(:)/nr/nc),'%0.3f')...
-                ', Grd Agl:' num2str(grdangle)]);
-
-                 
-         figure(2);
-         imshow(xk);
-         colormap jet;
-         colorbar;drawnow;
-         
-         %Restart if near orthogonal property of the residual is not guarantee
-         if (grdangle>0.3)
-                %disp('restart..') 
-                pk=-gfk;
-         end 
+      
     end
     x=xk;
+  
+    
 
 
 

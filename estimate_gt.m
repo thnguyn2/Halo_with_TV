@@ -1,4 +1,4 @@
-function [gk,tk] = estimate_gt(a_gamma,hf,params)
+function [tk] = estimate_gt(a_gamma,hf,params)
     %This function compute the estimation for gk and tk given gamma
     %Author: T. H. Nguyen
     %Date: 08/26/2015
@@ -29,14 +29,13 @@ function [gk,tk] = estimate_gt(a_gamma,hf,params)
   
     %Next, solve with the non-linear conjugate gradient
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
-    cur_a_tk = a_tk;
-    next_a_tk = nlcg(a_gamma,params,cur_a_tk);          
+    next_a_tk = nlcg(a_gamma,params,a_tk);          
     obj = fval(a_gamma,next_a_tk,params);
     disp(['Current objective: ' num2str(obj)]);
-    cur_a_tk = next_a_tk;
+    tk = next_a_tk;
     figure(3);
-    plot(cur_a_tk(end/2,:));drawnow;
+    stairs(tk(end/2,:));drawnow;
     figure(4);
-    subplot(121);imagesc(cur_a_tk);colorbar;title('Reconstructed phase');    
+    subplot(121);imagesc(tk);colorbar;title('Reconstructed phase');    
 end
 

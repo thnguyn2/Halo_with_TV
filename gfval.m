@@ -14,6 +14,6 @@ function [grad_res,mismatch_grad,tv_grad] = gfval(a_gamma,a_tk,params)
     G = Dx.*(Dx.*conj(Dx) + 1e-15).^(-0.5);%Derivative of the TV
     tv_grad = lambda*(TV'*G);    %See Tan's notebook for the adjoint operator of TV
     grad_res = mismatch_grad+tv_grad;
-    
+  
     
     

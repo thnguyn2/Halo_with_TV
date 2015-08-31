@@ -69,7 +69,7 @@ function [gk,tk] = estimate_gt_gpu(gamma,hf,niter,lambda,tv_weight,tol,method,sm
         else
             prevobj = obj;
         end
-%        obj_array(iter+1)=obj;
+
         
         %Draw the cross section of T in figure(2)
         figure(6);

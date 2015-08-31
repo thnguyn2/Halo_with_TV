@@ -7,6 +7,10 @@ res = zeros(size(y,1),size(y,2));
 %yy = (reshape(y(prod(imsize)+2:end), imsize(1), imsize(2)));
 
 res = adjDx(y(:,:,1)) + adjDy(y(:,:,2));
+% figure(5);
+% imagesc(res);
+% colormap gray; drawnow;
+% title('Updating tv grad');
 
 return;
 
