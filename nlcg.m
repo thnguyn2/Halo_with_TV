@@ -29,7 +29,7 @@ function x=nlcg(y,params,x0)
 params.LSc=0.01;%The constant c using in Line Search algorithm
                         %Note that the normalizing coefficients is needed
                         %here!!!
-params.LSrho=0.8;%Rho used in Line Search algorithm
+params.LSrho=0.6;%Rho used in Line Search algorithm
 params.LSMaxiter=100; %Max number of iteration for line-search
 params.step0=1;
 params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating 
@@ -51,15 +51,16 @@ gf0 =gfval(y,x0,params);
 %------------------------------------------------------------
 
 disp('Nonlinear conjugate gradient method for optimization');
-pk=-gf0;%Initial searching direction
+pk=-gf0;%Initial searching direction, pk is dx.
 xk=x0;
 gfk=gf0;
 
 k=0;
 obj_arr=zeros(0);
-
-    while ((k<params.CgMaxiter)&&(norm(gfk,'fro')>params.CgTol))
+while ((k<params.CgMaxiter)&&(norm(gfk,'fro')>params.CgTol))
+       %---Line search for minimization---
         [step,lsiter]=ls(y,xk,pk,params,'back');
+
         if (lsiter==0)
             params.step0=params.step0/params.LSrho; %If previous step can be found very quickly then increase step size
         end
@@ -72,13 +73,19 @@ obj_arr=zeros(0);
 
          %Calculate new gradient
          gfk1=gfval(y,xk1,params);
+         
+
 
          %Updating coefficients
+         %beta=(gfk1(:)'*gfk1(:))/(gfk(:)'*gfk(:)+eps);
+         
+          %Updating coefficients
          beta=(gfk1(:)'*(gfk1(:)-gfk(:)))/(gfk(:)'*gfk(:)+eps); %This is similar to perform 
                                                 %restarting once a poor
                                                 %direction is met
          beta=max(beta,0);
-                                                %New searching direction
+         
+         
          pk1=-gfk1+beta*pk;
 
          %Compute the condition for restarting
@@ -90,8 +97,7 @@ obj_arr=zeros(0);
          %Update all necessary info for next iteration
          pk=pk1;
          gfk=gfk1;
-         xk=xk1;
-         fk=fk1;
+         xk=xk1;     
             
          
          obj_arr(end+1)=fk1;
@@ -100,7 +106,6 @@ obj_arr=zeros(0);
          title('Objective function');
                  
          k=k+1;
-         cost=-pk(:)'*gfk(:)/sqrt(pk(:)'*pk(:))/sqrt(gfk(:)'*gfk(:));
          disp(['#' num2str(k) ', step: ' num2str(step) ...
                 ', Obj: ' num2str(fk1,'%0.5f') ', dc:' num2str(dc,'%0.5f')...
                 ', TV:' num2str(tv,'%0.5f')...
@@ -110,7 +115,7 @@ obj_arr=zeros(0);
                  
          figure(2);
          imshow(xk);
-         colormap gray;
+         colormap jet;
          colorbar;drawnow;
          
          %Restart if near orthogonal property of the residual is not guarantee

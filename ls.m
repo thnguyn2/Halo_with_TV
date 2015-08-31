@@ -27,12 +27,11 @@ function [step,iter]=ls(y,u,pk,params,method)
         case {'back'} %Back tracking line-search
              phi_ak=fval(y,u+step*pk,params);
              curthresh = phi0-c*step*abs(gphi0(:)'*pk(:)); %c = alpha
-             %while ((phi_ak>curthresh)&(iter<params.LSMaxiter))
-             while ((phi_ak>phi0)&(iter<params.LSMaxiter))              
-                 step=step*params.LSrho;
+             while ((phi_ak>curthresh)&(iter<params.LSMaxiter))
+                step=step*params.LSrho;
                  phi_ak=fval(y,u+step*pk,params);
                  iter=iter+1;
-                 %curthresh = phi0-c*step*abs(gphi0(:)'*pk(:));
+                 curthresh = phi0-c*step*abs(gphi0(:)'*pk(:));
              end
         case {'interp'} %Interpolation based line-search (see section 3.5 of [1])
             step0=step;

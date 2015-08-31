@@ -10,4 +10,4 @@ function [obj,obj1,obj2]  = fval(a_gamma,a_tk,params)
     %Total Variation part computation
     grad_l1_approx = (w.*conj(w)+1e-15).^(0.5); 
     obj2 = lambda*sum(grad_l1_approx(:));
-    obj = (obj1+obj2)/length(a_tk(:));
+    obj = (obj1+obj2);
