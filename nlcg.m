@@ -23,11 +23,6 @@ function x=nlcg(y,params,x0)
 %Note that the second term of f is not differentiable. Thus, we replace it
 %by sqrt(uT*u+muy) where muy is a very small number.
 %--------------------------------------------------------------------------
-F=params.F;
-D=params.D;
-H=params.H;
-lambda = params.lambda;
-
 [nr,nc]=size(x0);
 
 %Parameters for Line-Search algorithm

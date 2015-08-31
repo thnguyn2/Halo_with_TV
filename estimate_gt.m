@@ -10,22 +10,11 @@ function [gk,tk] = estimate_gt(a_gamma,hf,params)
     %Outputs:
     %   gk, tk: results of the solver
     
-    obj_array=zeros(0,1);
-    nrows = size(a_gamma,1);
-    ncols = size(a_gamma,2);
-    
-    %Read data from struct
-    niter = params.niter;
-    lambda = params.lambda;
-    tol = params.tol;
-    method = params.method;
+    obj_array=zeros(0,1);   
     smart_init_en = params.smart_init_en;
     
     %Get the operators
-    F = params.F;
-    D = params.D;
-    H = params.H;
-    
+    F = params.F;    
   
     if (smart_init_en==0)
       tk = ones(size(gamma));%Normal initialization

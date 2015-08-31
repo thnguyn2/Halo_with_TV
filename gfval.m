@@ -6,14 +6,13 @@ function [grad_res,mismatch_grad,tv_grad] = gfval(a_gamma,a_tk,params)
 %   a_tk = arg(tk)
 %Author: Tan H. Nguyen
     lambda = params.lambda;
-    D = params.D;
+    TV = params.TV;
     H = params.H; %Filtering operator
     %Compute the derivative of the 1st term
     mismatch_grad = 2*(H'*(H*a_tk-a_gamma)); %Gradient of the ||a_gamma-H.a_tk||^2 term
-    G_val = D*a_tk;                           %Gradient results
-    Gx = G_val(:,:,1);
-    Gy = G_val(:,:,2);
-    tv_grad = -lambda*(Gx+Gy)./(Gx.^2+Gy.^2+1e-15).^(0.5);
+    Dx =TV*a_tk;
+    G = Dx.*(Dx.*conj(Dx) + 1e-15).^(-0.5);%Derivative of the TV
+    tv_grad = lambda*(TV'*G);    %See Tan's notebook for the adjoint operator of TV
     grad_res = mismatch_grad+tv_grad;
     
     
