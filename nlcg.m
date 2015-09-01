@@ -33,7 +33,6 @@ params.LSrho=0.6;%Rho used in Line Search algorithm
 params.LSMaxiter=100; %Max number of iteration for line-search
 params.step0=1;
 params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating 
-params.CgMaxiter = 2000;
 
 
 % figure(7);
@@ -54,19 +53,12 @@ gfk=gf0;
 
 k=0;
 obj_arr=zeros(0);
-while ((k<params.CgMaxiter)&&(norm(gfk,'fro')>params.CgTol))
-       %---Line search for minimization---
-         %[step,lsiter]=ls(y,xk,pk,params,'back');
-         
-         
+while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
+           
         step = params.step0; 
         [f0,dc,tv] = fval(y, xk, params);
         
-        obj_arr(end+1)=f0;
-        %figure(3);
-        %plot(obj_arr);drawnow;
-        %title('Objective function');
-                 
+                  
         k=k+1;
         disp(['#' num2str(k) ', step: ' num2str(step) ...
                 ', Obj: ' num2str(f0,'%0.5f') ', dc:' num2str(dc,'%0.5f')...
@@ -106,14 +98,16 @@ while ((k<params.CgMaxiter)&&(norm(gfk,'fro')>params.CgTol))
           
            figure(2);
             hold off;
-            %plot(x0(end/2,:),'b');
+            plot(x0(1063,:),'b');
             hold on;
-            %plot(xk(end/2,:),'r');
-            imagesc(xk);colormap;colorbar
+            plot(xk(1063,:),'r');
             hold off;
-            %legend('Original','Reconstructed');
+            legend('Original','Reconstructed');
             %colormap jet;
             drawnow;
+            figure(3);
+            imagesc(xk);colormap gray;colorbar
+           
         
          
       

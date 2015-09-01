@@ -19,7 +19,7 @@ function [tk] = estimate_gt(a_gamma,hf,params)
     if (smart_init_en==0)
       tk = ones(size(gamma));%Normal initialization
     else
-        init_eps = 1e-8;%Smart initialization regularization factor
+        init_eps = 1e-2;%Smart initialization regularization factor
         hipf = 1-hf; %This is the fourier transform of delta - hf filter
         a_gammaf = F*a_gamma;
         a_tkf0=(conj(hipf).*a_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
