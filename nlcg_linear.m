@@ -1,4 +1,4 @@
-function x=nlcg(y,params,x0)
+function x=nlcg_linear(y,params,x0)
 %Non-linear conjugatte gradient with line-search
 %x=argmin ||y-H*x||_2^2+ alpha*TV(x) =  argmin f(x)
 %However, gradient of |V*u|_p norm can not be computed easily.
@@ -41,7 +41,7 @@ params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating
 
 
 %% Prepare for 1st iteration
-[fk,dc,tv]=fval(y,x0,params);%New objective
+[fk,dc,tv]=fval_linear(y,x0,params);%New objective
 disp(['Initial Objectives:' ' Obj: ' num2str(fk,'%3.4f') ', dc: ' num2str(dc,'%0.3f'), ', TV: ' num2str(tv,'%0.3f')]);
 gf0 =gfval(y,x0,params);
 %------------------------------------------------------------
@@ -56,7 +56,7 @@ obj_arr=zeros(0);
 while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
            
         step = params.step0; 
-        [f0,dc,tv] = fval(y, xk, params);
+        [f0,dc,tv] = fval_linear(y, xk, params);
         
                   
         k=k+1;
@@ -66,12 +66,12 @@ while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
 
         
         
-        f1 = fval(y, xk+step*pk, params);
+        f1 = fval_linear(y, xk+step*pk, params);
         lsiter = 0;
         while (f1 > f0 - params.LSc*step*abs(gfk(:)'*pk(:))) & (lsiter<params.LSMaxiter)%alpha = 0.01, t0 =1
         	lsiter = lsiter + 1;
             step = step * params.LSrho;
-            f1 = fval(y, xk+step*pk, params);
+            f1 = fval_linear(y, xk+step*pk, params);
         end
          
          if (lsiter==0)
@@ -84,7 +84,7 @@ while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
          xk=xk+step*pk;
 
          %Calculate new gradient
-         gfk1=gfval(y,xk,params);
+         gfk1=gfval_linear(y,xk,params);
 
          %Updating coefficients
          beta=(gfk1(:)'*gfk1(:))/(gfk(:)'*gfk(:)+eps);
