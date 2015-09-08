@@ -32,7 +32,7 @@
         plot(mcs);hold on;plot(cs,'r');hold on;title('Cross sections for phase');
         legend('Gamma(r)','T(r)');drawnow;       
     else   %Go with the real data
-       filename = '20xPh1_03';
+       filename = '10xPh1_03';
        a_gamma = -cast(imread(strcat('Pillars_data/',filename,'.tif')),'single');
        figure(1);
        imagesc(a_gamma);colormap gray;colorbar;       
@@ -96,6 +96,7 @@
     %Parameter definitions
     params.niter = 3000; %Number of iterations needed
     params.lambda = 2;
+    params.beta = 10;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;
@@ -108,8 +109,8 @@
     
     smartinit = 0; 
     if (gpu_compute_en==0)
-        %tk = estimate_gt_linear(a_gamma,hf,params); %Solve with the linear model
-        [gk,tk] = estimate_gt(gamma,hf,params); %Non-linear solver
+        tk = estimate_gt_linear(a_gamma,hf,params); %Solve with the linear model
+        %[tk] = estimate_gt(gamma,hf,params); %Non-linear solver
         
      else %Compute gk and tk on gpu
        % d = gpuDevice();

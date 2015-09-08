@@ -43,7 +43,7 @@ params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating
 %% Prepare for 1st iteration
 [fk,dc,tv]=fval_linear(y,x0,params);%New objective
 disp(['Initial Objectives:' ' Obj: ' num2str(fk,'%3.4f') ', dc: ' num2str(dc,'%0.3f'), ', TV: ' num2str(tv,'%0.3f')]);
-gf0 =gfval(y,x0,params);
+gf0 =gfval_linear(y,x0,params);
 %------------------------------------------------------------
 
 disp('Nonlinear conjugate gradient method for optimization');
@@ -79,7 +79,6 @@ while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
          else
             params.step0=params.step0*params.LSrho; %reduce intial searching step with knowledge given in previous step
          end
-         params.step0
          %State update
          xk=xk+step*pk;
 

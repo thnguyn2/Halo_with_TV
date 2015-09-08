@@ -1,4 +1,4 @@
-function x=nlcg(y,params,x0)
+function x=nlcg(y,x0,gk,params)
 %Non-linear conjugatte gradient with line-search
 %x=argmin ||y-H*x||_2^2+ alpha*TV(x) =  argmin f(x)
 %However, gradient of |V*u|_p norm can not be computed easily.
@@ -23,8 +23,6 @@ function x=nlcg(y,params,x0)
 %Note that the second term of f is not differentiable. Thus, we replace it
 %by sqrt(uT*u+muy) where muy is a very small number.
 %--------------------------------------------------------------------------
-[nr,nc]=size(x0);
-
 %Parameters for Line-Search algorithm
 params.LSc=0.01;%The constant c using in Line Search algorithm
                         %Note that the normalizing coefficients is needed
@@ -41,37 +39,38 @@ params.CgTol=1e-5;%Tolerence on the gradient norm to stop iterating
 
 
 %% Prepare for 1st iteration
-[fk,dc,tv]=fval(y,x0,params);%New objective
-disp(['Initial Objectives:' ' Obj: ' num2str(fk,'%3.4f') ', dc: ' num2str(dc,'%0.3f'), ', TV: ' num2str(tv,'%0.3f')]);
-gf0 =gfval(y,x0,params);
+[fk,meas,convv,tv]=fval(y,x0,gk,params);%New objective
+disp(['Initial Objectives:' ' Obj: ' num2str(fk,'%3.4f') ', measurement error: ' num2str(meas,'%0.3f'), ', convolution error: ' num2str(convv,'%0.3f') ', tv: ' num2str(tv,'%0.3f')]);
+gf0 =gfval(y,x0,gk,params);
 %------------------------------------------------------------
 
-disp('Nonlinear conjugate gradient method for optimization');
+disp('Nonlinear conjugate gradient method to search for tk');
 pk=-gf0;%Initial searching direction, pk is dx.
 xk=x0;
 gfk=gf0;
 
 k=0;
-obj_arr=zeros(0);
-while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
+while ((k<5)&&(norm(gfk,'fro')>params.CgTol))
            
         step = params.step0; 
-        [f0,dc,tv] = fval(y, xk, params);
+        
+        
+        %% Prepare for 1st iteration
+        [f0,meas,convv,tv]=fval(y,xk,gk,params);%New objective
+        disp(['#' num2str(k) ', step: ' num2str(step), ', obj:' num2str(f0,'%3.4f') ', measurement error: ' num2str(meas,'%0.3f'), ', convolution error: ' num2str(convv,'%0.3f') ', tv: ' num2str(tv,'%0.3f')]);
+        [f0,dc,tv] = fval(y, xk, gk, params);
         
                   
         k=k+1;
-        disp(['#' num2str(k) ', step: ' num2str(step) ...
-                ', Obj: ' num2str(f0,'%0.5f') ', dc:' num2str(dc,'%0.5f')...
-                ', TV:' num2str(tv,'%0.5f')]);
-
+      
         
         
-        f1 = fval(y, xk+step*pk, params);
+        f1 = fval(y, xk+step*pk, gk, params);
         lsiter = 0;
         while (f1 > f0 - params.LSc*step*abs(gfk(:)'*pk(:))) & (lsiter<params.LSMaxiter)%alpha = 0.01, t0 =1
         	lsiter = lsiter + 1;
             step = step * params.LSrho;
-            f1 = fval(y, xk+step*pk, params);
+            f1 = fval(y, xk+step*pk, gk, params);
         end
          
          if (lsiter==0)
@@ -79,12 +78,11 @@ while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
          else
             params.step0=params.step0*params.LSrho; %reduce intial searching step with knowledge given in previous step
          end
-         params.step0
          %State update
          xk=xk+step*pk;
 
          %Calculate new gradient
-         gfk1=gfval(y,xk,params);
+         gfk1=gfval(y,xk,gk,params);
 
          %Updating coefficients
          beta=(gfk1(:)'*gfk1(:))/(gfk(:)'*gfk(:)+eps);

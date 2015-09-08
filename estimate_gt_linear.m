@@ -24,7 +24,7 @@ function [tk] = estimate_gt_linear(a_gamma,hf,params)
   
     %Next, solve with the non-linear conjugate gradient
     disp(['Iter ' num2str(0) ': current objective: ' num2str(obj)]);
-    next_a_tk = nlcg(a_gamma,params,a_tk);          
+    next_a_tk = nlcg_linear(a_gamma,params,a_tk);          
     obj = fval_linear(a_gamma,next_a_tk,params);
     disp(['Current objective: ' num2str(obj)]);
     tk = next_a_tk;

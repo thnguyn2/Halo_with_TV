@@ -1,14 +1,22 @@
-function [obj,obj1,obj2]  = fval_linear(a_gamma,a_tk,params)
-   %Compute the objective function E=||arg(gamma)-(delta-h)*arg(a_tk)||^2+lambda*TV(a_tk)
+function [obj,obj1,obj2,obj3]  = fval(gamma,tk,gk,params)
+   %Compute the objective function E=||gamma-tk*conj(gk)||^2+lambda*|gk - h*tk|^2 + beta*TV(a_tk)
     lambda = params.lambda;
+    beta = params.beta;
     TV = params.TV;
     H = params.H;
+    
     %Measurement error
-    evect1 = a_gamma-H*a_tk;
+    evect1 = gamma-tk.*conj(gk);
     obj1 = sum(evect1(:).*conj(evect1(:)));
-    w = TV*a_tk;
+ 
+    %Convolution error
+    evect2 = gk - H*tk;
+    obj2 = lambda*sum(evect2(:).*conj(evect2(:)));
+    
+    %Total Variational prior
+    w = TV*tk;
     %Total Variation part computation
     grad_l1_approx = (w.*conj(w)+1e-15).^(0.5); 
-    obj2 = lambda*sum(grad_l1_approx(:));
-    obj = (obj1+obj2);
+    obj3 = beta*sum(grad_l1_approx(:));
+    obj = (obj1+obj1+obj3);
    
