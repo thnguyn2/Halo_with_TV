@@ -15,6 +15,7 @@ function [tk] = estimate_gt(gamma,hf,params)
     
     %Get the operators
     F = params.F;    
+    H = params.H;
   
     if (smart_init_en==0)
       tk = ones(size(gamma));%Normal initialization
@@ -44,8 +45,21 @@ function [tk] = estimate_gt(gamma,hf,params)
         gk2 = imfilter(gk,fspecial('gaussian',[150 150],20),'same');
         gk = gk./exp(i*angle(gk2));%Get rid of the low frequency smooth variation in gk
         
-        %Solve for tk given gk with conjugate gradient
-        tk = nlcg(gamma,tk,gk,params);          
+        switch (params.method)
+            case 'nclg' %Non-linear conjugate gradient solver
+                %Solve for tk given gk with conjugate gradient
+                tk = nlcg(gamma,tk,gk,params);          
+            case 'relax' %This method just ignore the TV term
+                beta2 = norm(gk,'fro');
+                beta2sqr = beta2^2;
+                rhs = beta2sqr*gamma./conj(gk)+params.lambda*(H'*gk);
+                rhsf = fft2(rhs);
+                tkf = rhsf./(beta2sqr+params.lambda*abs(hf).^2+1e-8); %Added factor for stability
+                tk = ifft2(tkf);
+                [obj,obj1,obj2]  = fval(gamma,tk,gk,params);
+                disp(['Iter ' num2str(iteridx) ': current objective: ' num2str(obj) ', Mismatch: ' num2str(obj1),...
+                ', Conv error: ' num2str(obj2)]);
+        end
         figure(1)
         subplot(1,3,1);imagesc(angle(tk));colorbar;title(sprintf('Current estimation tk - iter #%d',iteridx));drawnow;
         subplot(1,3,2);imagesc(angle(gk));colorbar;title(sprintf('Current estimation -gk iter #%d',iteridx));drawnow;

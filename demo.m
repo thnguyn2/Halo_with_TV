@@ -95,10 +95,10 @@
     
     %Parameter definitions
     params.niter = 3000; %Number of iterations needed
-    params.lambda = 2;
+    params.lambda = 20;
     params.beta = 10;
     params.tol = 1e-5; %Tolerance for the solver to stop
-    params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
+    params.method = method;%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;
     %Operator definitions
     params.F = FFT2(Nx); %Fourier transform operator
@@ -109,8 +109,8 @@
     
     smartinit = 0; 
     if (gpu_compute_en==0)
-        tk = estimate_gt_linear(a_gamma,hf,params); %Solve with the linear model
-        %[tk] = estimate_gt(gamma,hf,params); %Non-linear solver
+        %tk = estimate_gt_linear(a_gamma,hf,params); %Solve with the linear model
+        [tk] = estimate_gt(gamma,hf,params); %Non-linear solver
         
      else %Compute gk and tk on gpu
        % d = gpuDevice();

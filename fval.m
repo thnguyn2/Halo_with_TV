@@ -18,5 +18,10 @@ function [obj,obj1,obj2,obj3]  = fval(gamma,tk,gk,params)
     %Total Variation part computation
     grad_l1_approx = (w.*conj(w)+1e-15).^(0.5); 
     obj3 = beta*sum(grad_l1_approx(:));
-    obj = (obj1+obj1+obj3);
+    switch (params.method)
+        case 'nclg'
+            obj = (obj1+obj2+obj3);
+        case 'relax'
+            obj = obj1 + obj2;
+    end
    
