@@ -94,9 +94,9 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter = 3000; %Number of iterations needed
-    params.lambda = 2;
-    params.beta = 10;
+    params.niter =200; %Number of iterations needed
+    params.lambda = 1;
+    params.beta = 1;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
     params.smart_init_en = 1;

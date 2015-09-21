@@ -95,18 +95,18 @@ while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
              pk = -gfk1; %Restart
          end
           
-%            figure(2);
-%             hold off;
-%             plot(x0(980,:),'b');
-%             hold on;
-%             plot(xk(980,:),'r');
-%             hold off;
-%             legend('Original','Reconstructed');
-%             %colormap jet;
-%             drawnow;
-%             figure(3);
-%             imagesc(xk);colormap gray;colorbar
-%            
+           figure(2);
+            hold off;
+            plot(x0(980,:),'b');
+            hold on;
+            plot(xk(980,:),'r');
+            hold off;
+            legend('Original','Reconstructed');
+            %colormap jet;
+            drawnow;
+            figure(3);
+            imagesc(xk);colormap gray;colorbar
+           
         
          
       
