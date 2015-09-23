@@ -112,7 +112,7 @@
     smartinit = 0; 
     [xx,yy]=meshgrid(linspace(-ncols/2,ncols/2,ncols),linspace(-nrows/2,nrows/2,nrows));
     r = sqrt(xx.^2+yy.^2);
-    mask = ifftshift(cast((r<205),'single'));
+    mask = ifftshift(cast((r<200),'single'));
   
     init_eps = 1e-2;%Smart initialization regularization factor
     hipf = 1-hf; %This is the fourier transform of delta - hf filter
@@ -130,7 +130,7 @@
             a_tk_newf = fft2(a_tk_new);
             a_gammaf_shifted = fftshift(a_gammaf);
             a_tk_newf_shifted = fftshift(a_tk_newf);
-            a_tk_newf2 = a_tk_newf.*(mask==0)+a_gammaf.*(mask==1);
+            a_tk_newf2 = a_tk_newf.*(mask==1)+a_gammaf.*(mask==0);%Keep the low frequency component of the solution and replace the high frequency by the measurement
             a_tk_newf2_shifted = fftshift(a_tk_newf2);
             figure(4);
             hold off;
@@ -151,6 +151,14 @@
             title('Input image');
             subplot(122);
             imagesc(a_tk);colormap gray;
+            figure(6);
+            hold off;
+            plot(a_gamma(round(nrows/2),:),'-b');
+            hold on;
+            plot(a_tk(round(nrows/2),:),'-r');
+            hold off;
+            legend('Original','After current epoch');
+          
             title('Frequency replaced...');
        
         end
