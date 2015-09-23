@@ -97,7 +97,7 @@ while ((k<params.niter)&&(norm(gfk,'fro')>params.CgTol))
           
            figure(2);
             hold off;
-            plot(x0(980,:),'b');
+            plot(y(980,:),'b');
             hold on;
             plot(xk(980,:),'r');
             hold off;

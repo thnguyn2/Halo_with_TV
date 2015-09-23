@@ -32,8 +32,8 @@
         plot(mcs);hold on;plot(cs,'r');hold on;title('Cross sections for phase');
         legend('Gamma(r)','T(r)');drawnow;       
     else   %Go with the real data
-       filename = 'msmeg_frame082_org_phase_t';
-       datafolder = 'E:\Data for Halo removal from EPFL\Setup 2 (Nikon Eclipse) 100x\';
+       filename = '130815_C2C12_bgd_org_phase_t';
+       datafolder = 'E:\Data for Halo removal from EPFL\Setup 1 (Zeiss Axiovert) 60x\';
        
        a_gamma = cast(imread(strcat(datafolder,filename,'.tif')),'single');
        figure(1);
@@ -96,7 +96,7 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter =500; %Number of iterations needed
+    params.niter =10; %Number of iterations needed
     params.lambda = 10;
     params.beta = 1;
     params.tol = 1e-5; %Tolerance for the solver to stop
@@ -110,8 +110,51 @@
    
     
     smartinit = 0; 
+    [xx,yy]=meshgrid(linspace(-ncols/2,ncols/2,ncols),linspace(-nrows/2,nrows/2,nrows));
+    r = sqrt(xx.^2+yy.^2);
+    mask = ifftshift(cast((r<205),'single'));
+  
+    init_eps = 1e-2;%Smart initialization regularization factor
+    hipf = 1-hf; %This is the fourier transform of delta - hf filter
+    a_gammaf = params.F*a_gamma;
+    a_tkf0=(conj(hipf).*a_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
+    a_tk = params.F'*a_tkf0;       
+
+    epochidx = 0;
     if (gpu_compute_en==0)
-        tk = estimate_gt_linear(a_gamma,hf,params); %Solve with the linear model
+        for epochidx = 0:10
+            disp(['Working at epoch ' num2str(epochidx)]);
+            a_tk_new = estimate_gt_linear(a_gamma,hf,params,a_tk); %Solve with the linear model
+            %Compute the FFT of the new image
+            a_gammaf = fft2(a_gamma);
+            a_tk_newf = fft2(a_tk_new);
+            a_gammaf_shifted = fftshift(a_gammaf);
+            a_tk_newf_shifted = fftshift(a_tk_newf);
+            a_tk_newf2 = a_tk_newf.*(mask==0)+a_gammaf.*(mask==1);
+            a_tk_newf2_shifted = fftshift(a_tk_newf2);
+            figure(4);
+            hold off;
+            plot(log10(abs(a_gammaf_shifted(round(nrows/2),:))),'-r','LineWidth',1);
+            hold on;
+            plot(log10(abs(a_tk_newf_shifted(round(nrows/2),:))),'-b','LineWidth',1);
+            
+            hold on;
+            plot(log10(abs(a_tk_newf2_shifted(round(nrows/2),:))),'-g','LineWidth',1);
+            hold off;
+            legend('Original','After loop 1','replaced');
+
+            a_tk = real(ifft2(a_tk_newf2));
+           
+            figure(5);
+            subplot(121);
+            imagesc(a_gamma);colormap gray;
+            title('Input image');
+            subplot(122);
+            imagesc(a_tk);colormap gray;
+            title('Frequency replaced...');
+       
+        end
+        
         %[tk] = estimate_gt(gamma,hf,params); %Non-linear solver
         
      else %Compute gk and tk on gpu
