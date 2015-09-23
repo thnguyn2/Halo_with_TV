@@ -33,11 +33,9 @@
         legend('Gamma(r)','T(r)');drawnow;       
     else   %Go with the real data
        filename = '130815_C2C12_bgd_org_phase_t';
-       datafolder = 'E:\Data for Halo removal from EPFL\Setup 1 (Zeiss Axiovert) 60x\';
+       datafolder = '/raid5/Tan/Data_for_Halo_removal_from_EPFL/Setup1_Zeiss_Axiovert_60x/';
        
        a_gamma = cast(imread(strcat(datafolder,filename,'.tif')),'single');
-       figure(1);
-       imagesc(a_gamma);colormap gray;colorbar;       
        Nx = mean(size(a_gamma,1),size(a_gamma,2));
        a_gamma = a_gamma(1:Nx,1:Nx);
        nrows = Nx;
@@ -96,7 +94,7 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter =2; %Number of iterations needed
+    params.niter =50; %Number of iterations needed
     params.lambda = 20;
     params.beta = 1;
     params.tol = 1e-5; %Tolerance for the solver to stop
@@ -119,7 +117,7 @@
     a_gammaf = params.F*a_gamma;
     a_tkf0=(conj(hipf).*a_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
     a_tk = params.F'*a_tkf0;       
-    nepoch = 20;
+    nepoch = 200;
     epochidx = 0;
     if (gpu_compute_en==0)
         for epochidx = 1:nepoch
@@ -141,6 +139,7 @@
             hold on;
             plot(log10(abs(a_tk_newf2_shifted(round(nrows/2),:))),'-g','LineWidth',1);
             hold off;
+            drawnow;
             legend('Original','After loop 1','replaced');
 
             a_tk = real(ifft2(a_tk_newf2));
@@ -150,16 +149,20 @@
             imagesc(a_gamma);colormap gray;
             title('Input image');
             subplot(122);
-            imagesc(a_tk);colormap gray;
+            imagesc(a_tk);colormap gray;    
+            title('Frequency replaced...'); drawnow;
+            
+           
             figure(6);
             hold off;
             plot(a_gamma(round(nrows/2),:),'-b');
             hold on;
             plot(a_tk(round(nrows/2),:),'-r');
             hold off;
-            legend('Original','After current epoch');
+            legend('Original','After current epoch'); drawnow;
+            
           
-            title('Frequency replaced...');
+          
        
         end
         
