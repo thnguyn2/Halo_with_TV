@@ -32,8 +32,10 @@
         plot(mcs);hold on;plot(cs,'r');hold on;title('Cross sections for phase');
         legend('Gamma(r)','T(r)');drawnow;       
     else   %Go with the real data
-       filename = '10xPh1_03';
-       a_gamma = -cast(imread(strcat('Pillars_data/',filename,'.tif')),'single');
+       filename = 'msmeg_frame082_org_phase_t';
+       datafolder = 'E:\Data for Halo removal from EPFL\Setup 2 (Nikon Eclipse) 100x\';
+       
+       a_gamma = cast(imread(strcat(datafolder,filename,'.tif')),'single');
        figure(1);
        imagesc(a_gamma);colormap gray;colorbar;       
        Nx = mean(size(a_gamma,1),size(a_gamma,2));
@@ -50,11 +52,11 @@
     end
     
     %Step 2: create the correlation kernel
-    htype = 'measured';
+    htype = 'gaussian';
     
      switch (htype)
         case {'gaussian'} %A gaussian filter
-                    bw = 15; %Bandwidth parameter
+                    bw = 75; %Bandwidth parameter
                     h=fspecial('gaussian',[round(4*bw)+1 round(4*bw)+1],bw); %Transfer function of the low-pass filter...
                     %Fourier transform the filter
                     h1 = zeros(nrows,ncols);
@@ -94,8 +96,8 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter =200; %Number of iterations needed
-    params.lambda = 1;
+    params.niter =500; %Number of iterations needed
+    params.lambda = 10;
     params.beta = 1;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
@@ -117,6 +119,6 @@
        % reset(d); %Reset the device and clear its memmory
        % [gk,tk] = estimate_gt_gpu(gamma,hf,params);
     end
-    writeTIFF(tk,strcat('Pillars_data/',filename,'_rec.tif'))
+    writeTIFF(tk,strcat(datafolder,filename,'_rec.tif'))
     disp('Done with solving the inverse problem....');
     

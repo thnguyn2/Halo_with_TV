@@ -28,9 +28,9 @@ function [tk] = estimate_gt_linear(a_gamma,hf,params)
     obj = fval_linear(a_gamma,next_a_tk,params);
     disp(['Current objective: ' num2str(obj)]);
     tk = next_a_tk;
-    figure(3);
-    stairs(tk(end/2,:));drawnow;
-    figure(4);
-    subplot(121);imagesc(tk);colorbar;title('Reconstructed phase');    
+    %figure(3);
+    %stairs(tk(end/2,:));drawnow;
+    %figure(4);
+    %subplot(121);imagesc(tk);colorbar;title('Reconstructed phase');    
 end
 
