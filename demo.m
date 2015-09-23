@@ -96,8 +96,8 @@
     method = 'relax'; %Choose between the two: 'relax','cg','nlcg'
     
     %Parameter definitions
-    params.niter =10; %Number of iterations needed
-    params.lambda = 10;
+    params.niter =2; %Number of iterations needed
+    params.lambda = 20;
     params.beta = 1;
     params.tol = 1e-5; %Tolerance for the solver to stop
     params.method = 'relax';%Choose between 'relax'/'cg'/'nlcf'
@@ -112,17 +112,17 @@
     smartinit = 0; 
     [xx,yy]=meshgrid(linspace(-ncols/2,ncols/2,ncols),linspace(-nrows/2,nrows/2,nrows));
     r = sqrt(xx.^2+yy.^2);
-    mask = ifftshift(cast((r<200),'single'));
+    mask = ifftshift(cast((r<400),'single'));
   
     init_eps = 1e-2;%Smart initialization regularization factor
     hipf = 1-hf; %This is the fourier transform of delta - hf filter
     a_gammaf = params.F*a_gamma;
     a_tkf0=(conj(hipf).*a_gammaf)./(abs(hipf).^2+init_eps);%Weiner deconvolution
     a_tk = params.F'*a_tkf0;       
-
+    nepoch = 20;
     epochidx = 0;
     if (gpu_compute_en==0)
-        for epochidx = 0:10
+        for epochidx = 1:nepoch
             disp(['Working at epoch ' num2str(epochidx)]);
             a_tk_new = estimate_gt_linear(a_gamma,hf,params,a_tk); %Solve with the linear model
             %Compute the FFT of the new image
